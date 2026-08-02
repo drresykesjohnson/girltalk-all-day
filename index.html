@@ -329,9 +329,8 @@ font-family: 'Arvo', serif;
        mediaBodies.append("a")
                   .attr("href", function(d) {return d["itunes-link"] ? (d["itunes-link"] + "&at=10lNCN") : null})
                   .attr("target", "_blank")
-                  .append("img")
-                  .attr("src", function(d) {return d["itunes-link"] ? "https://linkmaker.itunes.apple.com/htmlResources/assets//images/web/linkmaker/badge_itunes-sm.png" : null})
-                  .style("border", "0");
+                  .style("display", function(d) {return d["itunes-link"] ? "inline" : "none"})
+                  .text("Buy on iTunes");
 
 
        activeTracks.style("display", "none");
