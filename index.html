@@ -296,6 +296,9 @@ font-family: 'Arvo', serif;
                    .attr("src", function(d) {
                      return d["album-image-link"] ? d["album-image-link"] :
                                          (d["image-link"] ? d["image-link"] : "record.jpg") })
+                   .on("error", function() {
+                     d3.select(this).on("error", null).attr("src", "record.jpg");
+                   })
                    .attr("height", 128)
                    .attr("width", 128);
        
