@@ -171,7 +171,7 @@ font-family: 'Arvo', serif;
 
         <div class="col-md-3 gt"><a href="http://illegal-art.net/allday/" target="_blank"><img src="allday_frontcover.jpg" height="48" width="48"></a> by <a href="http://en.wikipedia.org/wiki/Girl_Talk_(musician)" target="_blank">Girl Talk</a></div>
         <div class="col-md-2"><img height="48" src="advisory.jpg"></div>
-        <div class="col-md-2"><a href="https://soundcloud.com/" target="_blank"><img src="powered_by_soundcloud.png"></a></div>
+        <div class="col-md-2"><a href="https://www.youtube.com/watch?v=uWzkK7tUjaU" target="_blank">Watch on YouTube</a></div>
         <div class="col-md-2 header"><a href="https://twitter.com/share" class="twitter-share-button" data-via="adereth">Tweet</a>
 <script>!function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0],p=/^http:/.test(d.location)?'http':'https';if(!d.getElementById(id)){js=d.createElement(s);js.id=id;js.src=p+'://platform.twitter.com/widgets.js';fjs.parentNode.insertBefore(js,fjs);}}(document, 'script', 'twitter-wjs');</script></div>
         <div class="col-md-3"><div class="header">Created by <a href="https://twitter.com/adereth" target="_blank">@adereth</a></div></div>
@@ -180,25 +180,44 @@ font-family: 'Arvo', serif;
       </center>
 <br>
     </div>
-    <iframe id="sc-widget"
-            src="https://w.soundcloud.com/player/?url=https://soundcloud.com/intoanother/girl-talk-all-day"
-            width="100%"
-            height="165"
-            scrolling="no"
-            frameborder="no"></iframe>
+    <center><div id="yt-player"></div></center>
 
 
     <br>  <div class="container" id="root">
 
-    <script src="https://w.soundcloud.com/player/api.js" type="text/javascript"></script>
+    <script src="https://www.youtube.com/iframe_api"></script>
 
 
     <script src="d3.v3.js" charset="utf-8"></script>
     <script>
      d3.select("#play").attr("disabled", "true");
-     var widgetIframe = document.getElementById('sc-widget'),
-     widget       = SC.Widget(widgetIframe);
-     d3.select("#sc-widget").attr("height", 0)
+     var player, ytReady = false, dataReady = false, jumpTo;
+     function enablePlayIfReady() {
+       if (ytReady && dataReady) { d3.select("#play").attr("disabled", null); }
+     }
+     function onYouTubeIframeAPIReady() {
+       player = new YT.Player('yt-player', {
+         height: '225',
+         width: '400',
+         videoId: 'uWzkK7tUjaU',
+         playerVars: {'playsinline': 1},
+         events: {
+           'onReady': function(event) { ytReady = true; enablePlayIfReady(); },
+           'onStateChange': onPlayerStateChange
+         }
+       });
+     }
+     var progressInterval;
+     function onPlayerStateChange(event) {
+       if (event.data == YT.PlayerState.PLAYING) {
+         clearInterval(progressInterval);
+         progressInterval = setInterval(function() {
+           if (jumpTo) { jumpTo(player.getCurrentTime() * 1000); }
+         }, 200);
+       } else {
+         clearInterval(progressInterval);
+       }
+     }
      var margin = {top: 20, right: 40, bottom: 30, left: 40},
      width = document.getElementById("root").offsetWidth - margin.left - margin.right,
      height = 300 - margin.top - margin.bottom;
@@ -336,7 +355,7 @@ font-family: 'Arvo', serif;
        activeTracks.style("display", "none");
        
        var activeIndices = [];
-       function jumpTo(time) {
+       jumpTo = function(time) {
          currentLine.transition()
                     .duration(100)
                     .attr("x1", x(time))
@@ -376,7 +395,7 @@ font-family: 'Arvo', serif;
        }
 
        function seekTo(time) {
-         widget.seekTo(time);
+         player.seekTo(time / 1000, true);
        }
 
        var bg = svg.append("rect")
@@ -413,12 +432,8 @@ font-family: 'Arvo', serif;
        //bars.attr("visibility", "hidden");
        //bars.attr("class", "slideDown");
        //bars.classed("bar slideDown");
-       widget.bind(SC.Widget.Events.READY, function(event) {
-         d3.select("#play").attr("disabled", null);
-       })
-       widget.bind(SC.Widget.Events.PLAY_PROGRESS, function(event) {
-         jumpTo(event.currentPosition);
-	})
+       dataReady = true;
+       enablePlayIfReady();
 
      });
 
@@ -441,11 +456,11 @@ font-family: 'Arvo', serif;
        if (playing) {
          d3.select("#play-icon").style("display", "block");
          d3.select("#pause-icon").style("display", "none");
-         widget.pause();
+         player.pauseVideo();
        } else {
          d3.select("#play-icon").style("display", "none");
          d3.select("#pause-icon").style("display", "block");
-         widget.play();
+         player.playVideo();
        }
        playing = !playing;
      });
