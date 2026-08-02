@@ -171,7 +171,7 @@ font-family: 'Arvo', serif;
 
         <div class="col-md-3 gt"><a href="http://illegal-art.net/allday/" target="_blank"><img src="allday_frontcover.jpg" height="48" width="48"></a> by <a href="http://en.wikipedia.org/wiki/Girl_Talk_(musician)" target="_blank">Girl Talk</a></div>
         <div class="col-md-2"><img height="48" src="advisory.jpg"></div>
-        <div class="col-md-2"><a href="https://www.youtube.com/watch?v=uWzkK7tUjaU" target="_blank">Watch on YouTube</a></div>
+        <div class="col-md-2"><a href="https://archive.org/details/GirlTalk-AllDay" target="_blank">Audio via Internet Archive</a></div>
         <div class="col-md-2 header"><a href="https://twitter.com/share" class="twitter-share-button" data-via="adereth">Tweet</a>
 <script>!function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0],p=/^http:/.test(d.location)?'http':'https';if(!d.getElementById(id)){js=d.createElement(s);js.id=id;js.src=p+'://platform.twitter.com/widgets.js';fjs.parentNode.insertBefore(js,fjs);}}(document, 'script', 'twitter-wjs');</script></div>
         <div class="col-md-3"><div class="header">Created by <a href="https://twitter.com/adereth" target="_blank">@adereth</a></div></div>
@@ -180,44 +180,23 @@ font-family: 'Arvo', serif;
       </center>
 <br>
     </div>
-    <center><div id="yt-player"></div></center>
+    <center>
+      <audio id="player" controls style="width:90%;max-width:700px">
+        <source src="https://archive.org/download/GirlTalk-AllDay/GirlTalk-AllDay.mp3" type="audio/mpeg">
+      </audio>
+    </center>
 
 
     <br>  <div class="container" id="root">
 
-    <script src="https://www.youtube.com/iframe_api"></script>
-
-
     <script src="d3.v3.js" charset="utf-8"></script>
     <script>
-     d3.select("#play").attr("disabled", "true");
-     var player, ytReady = false, dataReady = false, jumpTo;
-     function enablePlayIfReady() {
-       if (ytReady && dataReady) { d3.select("#play").attr("disabled", null); }
-     }
-     function onYouTubeIframeAPIReady() {
-       player = new YT.Player('yt-player', {
-         height: '225',
-         width: '400',
-         videoId: 'uWzkK7tUjaU',
-         playerVars: {'playsinline': 1},
-         events: {
-           'onReady': function(event) { ytReady = true; enablePlayIfReady(); },
-           'onStateChange': onPlayerStateChange
-         }
-       });
-     }
-     var progressInterval;
-     function onPlayerStateChange(event) {
-       if (event.data == YT.PlayerState.PLAYING) {
-         clearInterval(progressInterval);
-         progressInterval = setInterval(function() {
-           if (jumpTo) { jumpTo(player.getCurrentTime() * 1000); }
-         }, 200);
-       } else {
-         clearInterval(progressInterval);
-       }
-     }
+     var player = document.getElementById('player');
+     var dataReady = false;
+     var jumpTo;
+     player.addEventListener('timeupdate', function() {
+       if (jumpTo) { jumpTo(player.currentTime * 1000); }
+     });
      var margin = {top: 20, right: 40, bottom: 30, left: 40},
      width = document.getElementById("root").offsetWidth - margin.left - margin.right,
      height = 300 - margin.top - margin.bottom;
@@ -395,7 +374,7 @@ font-family: 'Arvo', serif;
        }
 
        function seekTo(time) {
-         player.seekTo(time / 1000, true);
+         player.currentTime = time / 1000;
        }
 
        var bg = svg.append("rect")
@@ -433,17 +412,12 @@ font-family: 'Arvo', serif;
        //bars.attr("class", "slideDown");
        //bars.classed("bar slideDown");
        dataReady = true;
-       enablePlayIfReady();
 
      });
 
     </script>
 
     <center>
-      <button type="button" class="btn btn-default btn-lg" id="play">
-        <span class="glyphicon glyphicon-play" id="play-icon"></span>
-        <span class="glyphicon glyphicon-pause" id="pause-icon" style="display:none"></span>
-      </button>
       <button type="button" class="btn btn-default btn-lg" id="toggle-bars">
         <span class="glyphicon glyphicon-align-center" id="spread-icon" style="display:none"></span>
         <span class="glyphicon glyphicon-align-left" id="stacked-icon"></span>
@@ -451,20 +425,6 @@ font-family: 'Arvo', serif;
     </center>
 
     <script>
-     var playing = false;
-     d3.select("#play").on("click", function() {
-       if (playing) {
-         d3.select("#play-icon").style("display", "block");
-         d3.select("#pause-icon").style("display", "none");
-         player.pauseVideo();
-       } else {
-         d3.select("#play-icon").style("display", "none");
-         d3.select("#pause-icon").style("display", "block");
-         player.playVideo();
-       }
-       playing = !playing;
-     });
-
      var transitionTime = 500;
      var stacked = false;
      function spread() {
